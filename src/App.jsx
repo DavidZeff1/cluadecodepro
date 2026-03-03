@@ -559,7 +559,12 @@ export default function App() {
       setConversations(prev => prev.map(c => c.id === chatId ? { ...c, title: text.slice(0, 50) + (text.length > 50 ? "…" : "") } : c));
     }
 
-    await sendToApi(chatId, newMsgs, newMsgs.map(m => ({ role: m.role, content: m.content })));
+    const apiMsgs = newMsgs.map(m => ({ 
+      role: m.role, 
+      content: m.content ? m.content : (m.thinking ? "*(Thinking process)*" : " ")
+    }));
+
+    await sendToApi(chatId, newMsgs, apiMsgs);
   }, [input, loading, activeChatId, conversations, sendToApi]);
 
   const regenerate = useCallback(() => {
@@ -567,7 +572,8 @@ export default function App() {
     const msgs = activeChat.messages;
     if (msgs.length < 2) return;
     const withoutLast = msgs.slice(0, -1); // remove last assistant
-    sendToApi(activeChatId, withoutLast, withoutLast.map(m => ({ role: m.role, content: m.content })));
+    const apiMsgs = withoutLast.map(m => ({ role: m.role, content: m.content ? m.content : (m.thinking ? "*(Thinking process)*" : " ") }));
+    sendToApi(activeChatId, withoutLast, apiMsgs);
   }, [activeChat, activeChatId, loading, sendToApi]);
 
   const editMessage = useCallback((msgId, newContent) => {
@@ -577,7 +583,8 @@ export default function App() {
     const newUserMsg = { id: genId(), role: "user", content: newContent, timestamp: Date.now() };
     const before = activeChat.messages.slice(0, idx);
     const newMsgs = [...before, newUserMsg];
-    sendToApi(activeChatId, newMsgs, newMsgs.map(m => ({ role: m.role, content: m.content })));
+    const apiMsgs = newMsgs.map(m => ({ role: m.role, content: m.content ? m.content : (m.thinking ? "*(Thinking process)*" : " ") }));
+    sendToApi(activeChatId, newMsgs, apiMsgs);
   }, [activeChat, activeChatId, sendToApi]);
 
   // ── Skills ─────────────────────────────────────────────────────────────────
