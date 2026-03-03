@@ -3,9 +3,9 @@ import { useState, useRef, useEffect, useCallback, useMemo } from "react";
 // ─── Constants ────────────────────────────────────────────────────────────────
 
 const MODELS = [
-  { id: "claude-haiku-4-5-20251001", label: "Haiku 4.5",  short: "H4.5",  badge: "FASTEST",  in: 0.80,  out: 4.00,  ctx: 200000, thinking: false },
-  { id: "claude-sonnet-4-20250514",  label: "Sonnet 4",   short: "S4",    badge: "BALANCED", in: 3.00,  out: 15.00, ctx: 200000, thinking: true  },
-  { id: "claude-opus-4-5",           label: "Opus 4.5",   short: "O4.5",  badge: "SMARTEST", in: 15.00, out: 75.00, ctx: 200000, thinking: true  },
+  { id: "claude-3-5-haiku-20241022", label: "Haiku 3.5",  short: "H3.5",  badge: "FASTEST",  in: 0.80,  out: 4.00,  ctx: 200000, thinking: false },
+  { id: "claude-3-7-sonnet-20250219",  label: "Sonnet 3.7",   short: "S3.7",    badge: "BALANCED", in: 3.00,  out: 15.00, ctx: 200000, thinking: true  },
+  { id: "claude-3-opus-20240229",           label: "Opus 3",   short: "O3",  badge: "SMARTEST", in: 15.00, out: 75.00, ctx: 200000, thinking: false  },
 ];
 
 const BUILTIN_SKILLS = [
@@ -429,14 +429,15 @@ export default function App() {
     abortRef.current = controller;
 
     try {
+      const sys = effectiveSystem();
       const body = {
         model,
         max_tokens: maxTokens,
         temperature: thinking ? 1 : temperature,
-        system: effectiveSystem(),
         stream: true,
         messages: apiMsgs,
       };
+      if (sys) body.system = sys;
       if (topP < 1.0) body.top_p = topP;
       if (webSearch) body.tools = [{ type: "web_search_20250305", name: "web_search" }];
       if (thinking && selModel.thinking) body.thinking = { type: "enabled", budget_tokens: thinkBudget };
@@ -482,9 +483,9 @@ export default function App() {
             if (ev.type === "message_start" && ev.message?.usage) inTok = ev.message.usage.input_tokens;
             if (ev.type === "message_delta" && ev.usage)           outTok = ev.usage.output_tokens;
             // Stream partial text
-            if (ev.delta?.type === "text_delta") {
+            if (ev.delta?.type === "text_delta" || ev.delta?.type === "thinking_delta") {
               setConversations(prev => prev.map(c => c.id === chatId
-                ? { ...c, messages: c.messages.map(m => m.id === asstId ? { ...m, content: txt } : m) }
+                ? { ...c, messages: c.messages.map(m => m.id === asstId ? { ...m, content: txt, thinking: thinkTxt || undefined } : m) }
                 : c
               ));
             }
