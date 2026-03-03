@@ -561,7 +561,7 @@ export default function App() {
 
     const apiMsgs = newMsgs.map(m => ({ 
       role: m.role, 
-      content: m.content ? m.content : (m.thinking ? "*(Thinking process)*" : " ")
+      content: m.content ? m.content : (m.thinking ? "*(Thinking process)*" : "_")
     }));
 
     await sendToApi(chatId, newMsgs, apiMsgs);
@@ -572,7 +572,7 @@ export default function App() {
     const msgs = activeChat.messages;
     if (msgs.length < 2) return;
     const withoutLast = msgs.slice(0, -1); // remove last assistant
-    const apiMsgs = withoutLast.map(m => ({ role: m.role, content: m.content ? m.content : (m.thinking ? "*(Thinking process)*" : " ") }));
+    const apiMsgs = withoutLast.map(m => ({ role: m.role, content: m.content ? m.content : (m.thinking ? "*(Thinking process)*" : "_") }));
     sendToApi(activeChatId, withoutLast, apiMsgs);
   }, [activeChat, activeChatId, loading, sendToApi]);
 
@@ -583,7 +583,7 @@ export default function App() {
     const newUserMsg = { id: genId(), role: "user", content: newContent, timestamp: Date.now() };
     const before = activeChat.messages.slice(0, idx);
     const newMsgs = [...before, newUserMsg];
-    const apiMsgs = newMsgs.map(m => ({ role: m.role, content: m.content ? m.content : (m.thinking ? "*(Thinking process)*" : " ") }));
+    const apiMsgs = newMsgs.map(m => ({ role: m.role, content: m.content ? m.content : (m.thinking ? "*(Thinking process)*" : "_") }));
     sendToApi(activeChatId, newMsgs, apiMsgs);
   }, [activeChat, activeChatId, sendToApi]);
 
